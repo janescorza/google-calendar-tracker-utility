@@ -1,15 +1,11 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button } from 'react-native';
-import {
-  GoogleSignin,
-  GoogleSigninButton,
-  statusCodes,
-} from '@react-native-google-signin/google-signin';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, StyleSheet, Button, Text, View } from 'react-native';
+import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
+import CalendarEventsManager from './src/components/CalendarEventsManager';
 
-export default function App() {
-  const [error, setError] = useState();
-  const [userInfo, setUserInfo] = useState();
+const App: React.FC = () => {
+  const [error, setError] = useState<Error | undefined>();
+  const [userInfo, setUserInfo] = useState<any>();
 
   const configureGoogleSignIn = () => {
     GoogleSignin.configure({
@@ -22,7 +18,7 @@ export default function App() {
 
   useEffect(() => {
     configureGoogleSignIn();
-  });
+  }, []);
 
   const signIn = async () => {
     console.log('Pressed sign in');
@@ -31,41 +27,41 @@ export default function App() {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
       setUserInfo(userInfo);
-      setError();
+      setError(undefined);
     } catch (e) {
-      setError(e);
+      setError(e as Error);
     }
   };
 
   const logout = () => {
     setUserInfo(undefined);
-    GoogleSignin.revokeAccess();
-    GoogleSignin.signOut();
   };
 
   return (
-    <View style={styles.container}>
-      <Text>Hello there!!</Text>
-      {userInfo && <Text>{JSON.stringify(userInfo.data.user)}</Text>}
-      {userInfo ? (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.signInContainer}>
+        <Text>Google Sign-In Example</Text>
+        <GoogleSigninButton onPress={signIn} />
         <Button title="Logout" onPress={logout} />
-      ) : (
-        <GoogleSigninButton
-          size={GoogleSigninButton.Size.Standard}
-          color={GoogleSigninButton.Color.Dark}
-          onPress={signIn}
-        />
-      )}
-      <StatusBar style="auto" />
-    </View>
+        {error && <Text style={styles.errorText}>{error.message}</Text>}
+      </View>
+      <CalendarEventsManager />
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+  },
+  signInContainer: {
+    padding: 16,
     alignItems: 'center',
-    justifyContent: 'center',
+  },
+  errorText: {
+    color: 'red',
+    marginTop: 8,
   },
 });
+
+export default App;
