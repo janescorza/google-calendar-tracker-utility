@@ -22,6 +22,19 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "clientId": "process.env.EXPO_CLIENT_ID",
+      "androidClientId": "process.env.ANDROID_CLIENT_ID"
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-auth-session",
+        {
+          "clientId": "process.env.EXPO_CLIENT_ID"
+        }
+      ]
+    ]
   }
 }

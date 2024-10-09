@@ -1,12 +1,18 @@
+import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
+import { AuthProvider } from './src/context/AuthContext';
+import GoogleAuth from './GoogleAuth';
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Hello there!!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <AuthProvider>
+      <View style={styles.container}>
+        <Text>Hello there!!</Text>
+        <GoogleAuth />
+        <StatusBar style="auto" />
+      </View>
+    </AuthProvider>
   );
 }
 
