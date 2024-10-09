@@ -1,13 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button } from "react-native";
+import { StyleSheet, Text, View, Button } from 'react-native';
 import {
   GoogleSignin,
   GoogleSigninButton,
   statusCodes,
-} from "@react-native-google-signin/google-signin";
-import { useEffect, useState } from "react";
-
-
+} from '@react-native-google-signin/google-signin';
+import { useEffect, useState } from 'react';
 
 export default function App() {
   const [error, setError] = useState();
@@ -16,9 +14,9 @@ export default function App() {
   const configureGoogleSignIn = () => {
     GoogleSignin.configure({
       webClientId:
-        "843874562806-sihdthikal5qmefrjtivpauio35q8elg.apps.googleusercontent.com",
+        '843874562806-sihdthikal5qmefrjtivpauio35q8elg.apps.googleusercontent.com',
       iosClientId:
-        "843874562806-ei87dghk76loc13vrgc96vbu2a0kffm9.apps.googleusercontent.com",
+        '843874562806-ei87dghk76loc13vrgc96vbu2a0kffm9.apps.googleusercontent.com',
     });
   };
 
@@ -27,7 +25,7 @@ export default function App() {
   });
 
   const signIn = async () => {
-    console.log("Pressed sign in");
+    console.log('Pressed sign in');
 
     try {
       await GoogleSignin.hasPlayServices();
@@ -44,8 +42,6 @@ export default function App() {
     GoogleSignin.revokeAccess();
     GoogleSignin.signOut();
   };
-
-
 
   return (
     <View style={styles.container}>

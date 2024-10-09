@@ -9,7 +9,8 @@
     "web": "expo start --web",
     "test": "jest",
     "commit": "cz",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prettier": "prettier --write ."
   },
   "dependencies": {
     "@react-native-google-signin/google-signin": "^13.1.0",
