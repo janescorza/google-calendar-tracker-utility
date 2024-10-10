@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, TextInput, StyleSheet, Alert, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  Button,
+  TextInput,
+  StyleSheet,
+  Alert,
+  ScrollView,
+} from 'react-native';
 import RNCalendarEvents from 'react-native-calendar-events';
 import { Picker } from '@react-native-picker/picker';
 
@@ -35,7 +43,10 @@ const CalendarEventsManager: React.FC = () => {
       if (auth === 'authorized') {
         fetchCalendars();
       } else {
-        Alert.alert('Permission required', 'This app needs calendar access to function properly.');
+        Alert.alert(
+          'Permission required',
+          'This app needs calendar access to function properly.',
+        );
       }
     } catch (error) {
       console.error('Error requesting calendar permissions:', error);
@@ -45,14 +56,14 @@ const CalendarEventsManager: React.FC = () => {
   const fetchCalendars = async () => {
     try {
       const fetchedCalendars = await RNCalendarEvents.findCalendars();
-      const formattedCalendars = fetchedCalendars.map(cal => ({
+      const formattedCalendars = fetchedCalendars.map((cal) => ({
         id: cal.id,
         title: cal.title,
-        isPrimary: cal.isPrimary
+        isPrimary: cal.isPrimary,
       }));
       setCalendars(formattedCalendars);
-      
-      const primaryCalendar = formattedCalendars.find(cal => cal.isPrimary);
+
+      const primaryCalendar = formattedCalendars.find((cal) => cal.isPrimary);
       if (primaryCalendar) {
         setSelectedCalendarId(primaryCalendar.id);
       }
@@ -65,7 +76,9 @@ const CalendarEventsManager: React.FC = () => {
     try {
       const startDate = new Date();
       const endDate = new Date(startDate.getTime() + event.duration * 60000);
-      const eventTitle = event.location ? `${event.name} @ ${event.location}` : event.name;
+      const eventTitle = event.location
+        ? `${event.name} @ ${event.location}`
+        : event.name;
 
       const eventId = await RNCalendarEvents.saveEvent(eventTitle, {
         calendarId: selectedCalendarId,
@@ -86,9 +99,9 @@ const CalendarEventsManager: React.FC = () => {
   };
 
   const handleUpdateEvent = (updatedEvent: DefaultEvent) => {
-    setDefaultEvents(prev => prev.map(e => 
-      e.name === updatedEvent.name ? updatedEvent : e
-    ));
+    setDefaultEvents((prev) =>
+      prev.map((e) => (e.name === updatedEvent.name ? updatedEvent : e)),
+    );
     setSelectedEvent(null);
   };
 
@@ -100,7 +113,11 @@ const CalendarEventsManager: React.FC = () => {
         onValueChange={(itemValue) => setSelectedCalendarId(itemValue)}
       >
         {calendars.map((calendar) => (
-          <Picker.Item key={calendar.id} label={calendar.title} value={calendar.id} />
+          <Picker.Item
+            key={calendar.id}
+            label={calendar.title}
+            value={calendar.id}
+          />
         ))}
       </Picker>
 
@@ -108,7 +125,9 @@ const CalendarEventsManager: React.FC = () => {
       {defaultEvents.map((event) => (
         <Button
           key={event.name}
-          title={event.location ? `${event.name} @ ${event.location}` : event.name}
+          title={
+            event.location ? `${event.name} @ ${event.location}` : event.name
+          }
           onPress={() => createEvent(event)}
         />
       ))}
@@ -128,13 +147,20 @@ const CalendarEventsManager: React.FC = () => {
           <TextInput
             style={styles.input}
             value={selectedEvent.location}
-            onChangeText={(text) => setSelectedEvent({...selectedEvent, location: text})}
+            onChangeText={(text) =>
+              setSelectedEvent({ ...selectedEvent, location: text })
+            }
             placeholder="Location (optional)"
           />
           <TextInput
             style={styles.input}
             value={selectedEvent.duration.toString()}
-            onChangeText={(text) => setSelectedEvent({...selectedEvent, duration: parseInt(text) || 0})}
+            onChangeText={(text) =>
+              setSelectedEvent({
+                ...selectedEvent,
+                duration: parseInt(text) || 0,
+              })
+            }
             placeholder="Duration (minutes)"
             keyboardType="numeric"
           />

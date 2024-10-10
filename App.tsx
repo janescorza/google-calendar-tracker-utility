@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, Button, Text, View } from 'react-native';
-import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+} from '@react-native-google-signin/google-signin';
 import CalendarEventsManager from './src/components/CalendarEventsManager';
 
 const App: React.FC = () => {
