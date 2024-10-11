@@ -1,14 +1,7 @@
-// EventConfigurationCard.tsx
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { DefaultEvent, Calendar } from '../types.ts';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { DefaultEvent, Calendar } from '../types';
+import EventForm from './EventForm';
 import TimeSelector from './TimeSelector';
 
 interface EventConfigurationCardProps {
@@ -34,7 +27,6 @@ const EventConfigurationCard: React.FC<EventConfigurationCardProps> = ({
   const [selectedCalendarId, setSelectedCalendarId] = useState(
     event.calendarId || calendars.find((cal) => cal.isPrimary)?.id || '',
   );
-
   const [startTime, setStartTime] = useState(new Date());
 
   const handleCreate = () => {
@@ -42,7 +34,7 @@ const EventConfigurationCard: React.FC<EventConfigurationCardProps> = ({
       name,
       location,
       duration: parseFloat(duration) * 60, // Convert hours to minutes
-      calendarId: selectedCalendarId, // Add this line
+      calendarId: selectedCalendarId,
     };
     onCreateEvent(updatedEvent, selectedCalendarId, startTime);
   };
@@ -50,39 +42,26 @@ const EventConfigurationCard: React.FC<EventConfigurationCardProps> = ({
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Event Configuration</Text>
-      <Text style={styles.label}>Event Name</Text>
-      <TextInput style={styles.input} value={name} onChangeText={setName} />
-      <Text style={styles.label}>Location (optional)</Text>
-      <TextInput
-        style={styles.input}
-        value={location}
-        onChangeText={setLocation}
+
+      <EventForm
+        name={name}
+        setName={setName}
+        location={location}
+        setLocation={setLocation}
+        duration={duration}
+        setDuration={setDuration}
+        selectedCalendarId={selectedCalendarId}
+        setSelectedCalendarId={setSelectedCalendarId}
+        calendars={calendars}
       />
-      <Text style={styles.label}>Duration (hours)</Text>
-      <TextInput
-        style={styles.input}
-        value={duration}
-        onChangeText={setDuration}
-        keyboardType="numeric"
-      />
-      <Text style={styles.label}>Calendar</Text>
-      <Picker
-        selectedValue={selectedCalendarId}
-        onValueChange={(itemValue) => setSelectedCalendarId(itemValue)}
-        style={styles.picker}
-      >
-        {calendars.map((calendar) => (
-          <Picker.Item
-            key={calendar.id}
-            label={calendar.title}
-            value={calendar.id}
-          />
-        ))}
-      </Picker>
+
       <TimeSelector onTimeSelected={setStartTime} />
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={onCancel}>
-          <Text style={styles.buttonText}>Cancel</Text>
+        <TouchableOpacity
+          style={[styles.button, styles.cancelButton]}
+          onPress={onCancel}
+        >
+          <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.button, styles.createButton]}
@@ -107,18 +86,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 15,
   },
-  input: {
-    height: 40,
-    borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-  },
-  picker: {
-    height: 40,
-    marginBottom: 10,
-  },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -128,8 +95,16 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     borderRadius: 5,
-    backgroundColor: '#ccc',
     marginHorizontal: 5,
+  },
+  cancelButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#6200ee',
+  },
+  cancelButtonText: {
+    color: '#6200ee',
+    textAlign: 'center',
   },
   createButton: {
     backgroundColor: '#6200ee',
@@ -137,13 +112,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     textAlign: 'center',
-  },
-  inputContainer: {
-    marginBottom: 15,
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 5,
   },
 });
 

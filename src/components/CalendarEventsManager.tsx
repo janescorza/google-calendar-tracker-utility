@@ -6,6 +6,7 @@ import DefaultEventsList from './DefaultEventsList';
 import EventConfigurationCard from './EventConfigurationCard';
 import AddDefaultEventCard from './AddDefaultEventCard';
 import { DefaultEvent, Calendar } from '../types';
+import Snackbar from 'react-native-snackbar';
 
 const CalendarEventsManager: React.FC = () => {
   const [calendars, setCalendars] = useState<Calendar[]>([]);
@@ -104,12 +105,18 @@ const CalendarEventsManager: React.FC = () => {
         endDate: endTime.toISOString(),
       });
 
-      Alert.alert('Success', `Event "${eventTitle}" created successfully!`);
+      Snackbar.show({
+        text: `Event "${eventTitle}" created successfully!`,
+        duration: Snackbar.LENGTH_SHORT,
+      });
       setSelectedEvent(null);
       return eventId;
     } catch (error) {
       console.error('Error creating event:', error);
-      Alert.alert('Error', 'Failed to create event. Please try again.');
+      Snackbar.show({
+        text: 'Failed to create event. Please try again.',
+        duration: Snackbar.LENGTH_SHORT,
+      });
     }
   };
 
@@ -158,6 +165,7 @@ const CalendarEventsManager: React.FC = () => {
     return (
       <DefaultEventsList
         events={defaultEvents}
+        calendars={calendars}
         onEventPress={(event) => setSelectedEvent(event)}
         onDeleteEvent={handleDeleteDefaultEvent}
       />
@@ -183,18 +191,21 @@ const styles = StyleSheet.create({
   },
   bottomContent: {},
   addButton: {
-    backgroundColor: '#6200ee',
+    borderColor: '#6200ee',
+    borderWidth: 1,
+    backgroundColor: 'transparent',
     padding: 10,
     borderRadius: 5,
     marginBottom: 20,
   },
   addButtonText: {
-    color: 'white',
+    color: '#6200ee',
     textAlign: 'center',
     fontWeight: 'bold',
   },
   disabledButton: {
     backgroundColor: '#cccccc',
+    borderColor: '#cccccc',
   },
   disabledButtonText: {
     color: '#666666',

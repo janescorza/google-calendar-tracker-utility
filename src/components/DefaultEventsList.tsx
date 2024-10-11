@@ -9,21 +9,28 @@ import {
   Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { DefaultEvent } from '../types';
+import { DefaultEvent, Calendar } from '../types';
 
 const { height: screenHeight } = Dimensions.get('window');
 
 interface DefaultEventsListProps {
   events: DefaultEvent[];
+  calendars: Calendar[];
   onEventPress: (event: DefaultEvent) => void;
   onDeleteEvent: (event: DefaultEvent) => void;
 }
 
 const DefaultEventsList: React.FC<DefaultEventsListProps> = ({
   events,
+  calendars,
   onEventPress,
   onDeleteEvent,
 }) => {
+  const getCalendarName = (calendarId: string) => {
+    const calendar = calendars.find((cal) => cal.id === calendarId);
+    return calendar ? calendar.title : 'Unknown Calendar';
+  };
+
   const handleDeletePress = (event: DefaultEvent) => {
     Alert.alert(
       'Delete Event',
@@ -50,7 +57,7 @@ const DefaultEventsList: React.FC<DefaultEventsListProps> = ({
           {item.location ? `${item.name} @ ${item.location}` : item.name}
         </Text>
         <Text style={styles.eventDuration}>
-          Default - {item.duration / 60}h
+          {getCalendarName(item.calendarId)} - {item.duration / 60}h
         </Text>
       </TouchableOpacity>
       <TouchableOpacity
