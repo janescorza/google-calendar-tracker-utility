@@ -50,26 +50,22 @@ const EventConfigurationCard: React.FC<EventConfigurationCardProps> = ({
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Event Configuration</Text>
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder="Event Name"
-      />
+      <Text style={styles.label}>Event Name</Text>
+      <TextInput style={styles.input} value={name} onChangeText={setName} />
+      <Text style={styles.label}>Location (optional)</Text>
       <TextInput
         style={styles.input}
         value={location}
         onChangeText={setLocation}
-        placeholder="Location (optional)"
       />
       <Text style={styles.label}>Duration (hours)</Text>
       <TextInput
         style={styles.input}
         value={duration}
         onChangeText={setDuration}
-        placeholder="Duration"
         keyboardType="numeric"
       />
+      <Text style={styles.label}>Calendar</Text>
       <Picker
         selectedValue={selectedCalendarId}
         onValueChange={(itemValue) => setSelectedCalendarId(itemValue)}
@@ -117,6 +113,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     paddingHorizontal: 10,
+    marginBottom: 10,
   },
   picker: {
     height: 40,

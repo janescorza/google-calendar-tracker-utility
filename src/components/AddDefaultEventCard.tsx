@@ -28,7 +28,8 @@ const AddDefaultEventCard: React.FC<AddDefaultEventCardProps> = ({
   );
 
   const isFormValid = useMemo(() => {
-    return name.trim() !== '' && duration.trim() !== '';
+    const durationValue = parseFloat(duration);
+    return name.trim() !== '' && !isNaN(durationValue) && durationValue > 0;
   }, [name, duration]);
 
   const handleAdd = () => {

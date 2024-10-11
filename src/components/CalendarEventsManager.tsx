@@ -49,6 +49,14 @@ const CalendarEventsManager: React.FC = () => {
     setShowAddEventCard(false);
   };
 
+  const handleDeleteDefaultEvent = (eventToDelete: DefaultEvent) => {
+    const updatedEvents = defaultEvents.filter(
+      (event) => event.name !== eventToDelete.name,
+    );
+    setDefaultEvents(updatedEvents);
+    saveDefaultEvents(updatedEvents);
+  };
+
   const requestCalendarPermissions = async () => {
     try {
       const auth = await RNCalendarEvents.requestPermissions();
@@ -105,6 +113,26 @@ const CalendarEventsManager: React.FC = () => {
     }
   };
 
+  const renderTopContent = () => {
+    const isDisabled = showAddEventCard || selectedEvent !== null;
+    return (
+      <TouchableOpacity
+        style={[styles.addButton, isDisabled && styles.disabledButton]}
+        onPress={() => !isDisabled && setShowAddEventCard(true)}
+        disabled={isDisabled}
+      >
+        <Text
+          style={[
+            styles.addButtonText,
+            isDisabled && styles.disabledButtonText,
+          ]}
+        >
+          Add New Default Event
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
   const renderContent = () => {
     if (selectedEvent) {
       return (
@@ -131,20 +159,14 @@ const CalendarEventsManager: React.FC = () => {
       <DefaultEventsList
         events={defaultEvents}
         onEventPress={(event) => setSelectedEvent(event)}
+        onDeleteEvent={handleDeleteDefaultEvent}
       />
     );
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.topContent}>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => setShowAddEventCard(true)}
-        >
-          <Text style={styles.addButtonText}>Add New Default Event</Text>
-        </TouchableOpacity>
-      </View>
+      <View style={styles.topContent}>{renderTopContent()}</View>
       <View style={styles.bottomContent}>{renderContent()}</View>
     </View>
   );
@@ -170,6 +192,12 @@ const styles = StyleSheet.create({
     color: 'white',
     textAlign: 'center',
     fontWeight: 'bold',
+  },
+  disabledButton: {
+    backgroundColor: '#cccccc',
+  },
+  disabledButtonText: {
+    color: '#666666',
   },
 });
 
