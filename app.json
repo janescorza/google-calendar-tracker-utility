@@ -13,16 +13,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.dev.jan.calendartrackerapp",
-      "supportsTablet": true,
-      "infoPlist": {
-        "CFBundleURLTypes": [
-          {
-            "CFBundleURLSchemes": [
-              "com.googleusercontent.apps.843874562806-ei87dghk76loc13vrgc96vbu2a0kffm9"
-            ]
-          }
-        ]
-      }
+      "supportsTablet": true
     },
     "android": {
       "package": "com.dev.jan.calendartrackerapp",
