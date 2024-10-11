@@ -1,35 +1,18 @@
+// CalendarEventsManager.tsx
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  Button,
-  TextInput,
-  StyleSheet,
-  Alert,
-  ScrollView,
-} from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import RNCalendarEvents from 'react-native-calendar-events';
-import { Picker } from '@react-native-picker/picker';
-
-interface DefaultEvent {
-  name: string;
-  location: string;
-  duration: number; // in minutes
-}
-
-interface Calendar {
-  id: string;
-  title: string;
-  isPrimary: boolean;
-}
+import DefaultEventsList from './DefaultEventsList';
+import EventConfigurationCard from './EventConfigurationCard';
+import { DefaultEvent, Calendar } from '../types.ts';
 
 const CalendarEventsManager: React.FC = () => {
   const [calendars, setCalendars] = useState<Calendar[]>([]);
-  const [selectedCalendarId, setSelectedCalendarId] = useState<string>('');
   const [defaultEvents, setDefaultEvents] = useState<DefaultEvent[]>([
     { name: 'Sleep', location: 'casa yaya', duration: 480 },
-    { name: 'Lunch', location: 'casa yaya', duration: 60 },
+    { name: 'Lunch', location: 'casa yaya', duration: 30 },
     { name: 'Gym', location: '', duration: 90 },
+    { name: 'Shower', location: 'Gym', duration: 30 },
   ]);
   const [selectedEvent, setSelectedEvent] = useState<DefaultEvent | null>(null);
 
@@ -62,31 +45,30 @@ const CalendarEventsManager: React.FC = () => {
         isPrimary: cal.isPrimary,
       }));
       setCalendars(formattedCalendars);
-
-      const primaryCalendar = formattedCalendars.find((cal) => cal.isPrimary);
-      if (primaryCalendar) {
-        setSelectedCalendarId(primaryCalendar.id);
-      }
     } catch (error) {
       console.error('Error fetching calendars:', error);
     }
   };
 
-  const createEvent = async (event: DefaultEvent) => {
+  const createEvent = async (
+    event: DefaultEvent,
+    calendarId: string,
+    startTime: Date,
+  ) => {
     try {
-      const startDate = new Date();
-      const endDate = new Date(startDate.getTime() + event.duration * 60000);
+      const endTime = new Date(startTime.getTime() + event.duration * 60000);
       const eventTitle = event.location
         ? `${event.name} @ ${event.location}`
         : event.name;
 
       const eventId = await RNCalendarEvents.saveEvent(eventTitle, {
-        calendarId: selectedCalendarId,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
+        calendarId: calendarId,
+        startDate: startTime.toISOString(),
+        endDate: endTime.toISOString(),
       });
 
       Alert.alert('Success', `Event "${eventTitle}" created successfully!`);
+      setSelectedEvent(null);
       return eventId;
     } catch (error) {
       console.error('Error creating event:', error);
@@ -94,83 +76,21 @@ const CalendarEventsManager: React.FC = () => {
     }
   };
 
-  const handleEventPress = (event: DefaultEvent) => {
-    setSelectedEvent(event);
-  };
-
-  const handleUpdateEvent = (updatedEvent: DefaultEvent) => {
-    setDefaultEvents((prev) =>
-      prev.map((e) => (e.name === updatedEvent.name ? updatedEvent : e)),
-    );
-    setSelectedEvent(null);
-  };
-
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Select Calendar</Text>
-      <Picker
-        selectedValue={selectedCalendarId}
-        onValueChange={(itemValue) => setSelectedCalendarId(itemValue)}
-      >
-        {calendars.map((calendar) => (
-          <Picker.Item
-            key={calendar.id}
-            label={calendar.title}
-            value={calendar.id}
-          />
-        ))}
-      </Picker>
-
-      <Text style={styles.title}>Quick Add Events</Text>
-      {defaultEvents.map((event) => (
-        <Button
-          key={event.name}
-          title={
-            event.location ? `${event.name} @ ${event.location}` : event.name
-          }
-          onPress={() => createEvent(event)}
-        />
-      ))}
-
-      <Text style={styles.title}>Customize Events</Text>
-      {defaultEvents.map((event) => (
-        <Button
-          key={event.name}
-          title={`Edit ${event.name}`}
-          onPress={() => handleEventPress(event)}
-        />
-      ))}
-
+    <View style={styles.container}>
+      <DefaultEventsList
+        events={defaultEvents}
+        onEventPress={(event: any) => setSelectedEvent(event)}
+      />
       {selectedEvent && (
-        <View style={styles.editForm}>
-          <Text style={styles.subtitle}>Edit {selectedEvent.name}</Text>
-          <TextInput
-            style={styles.input}
-            value={selectedEvent.location}
-            onChangeText={(text) =>
-              setSelectedEvent({ ...selectedEvent, location: text })
-            }
-            placeholder="Location (optional)"
-          />
-          <TextInput
-            style={styles.input}
-            value={selectedEvent.duration.toString()}
-            onChangeText={(text) =>
-              setSelectedEvent({
-                ...selectedEvent,
-                duration: parseInt(text) || 0,
-              })
-            }
-            placeholder="Duration (minutes)"
-            keyboardType="numeric"
-          />
-          <Button
-            title="Update"
-            onPress={() => handleUpdateEvent(selectedEvent)}
-          />
-        </View>
+        <EventConfigurationCard
+          event={selectedEvent}
+          calendars={calendars}
+          onCreateEvent={createEvent}
+          onCancel={() => setSelectedEvent(null)}
+        />
       )}
-    </ScrollView>
+    </View>
   );
 };
 
@@ -178,30 +98,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-  },
-  editForm: {
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 5,
   },
 });
 
