@@ -1,41 +1,61 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  Button,
-  TextInput,
-  StyleSheet,
-  Alert,
-  ScrollView,
-} from 'react-native';
+import { View, StyleSheet, Alert, TouchableOpacity, Text } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNCalendarEvents from 'react-native-calendar-events';
-import { Picker } from '@react-native-picker/picker';
-
-interface DefaultEvent {
-  name: string;
-  location: string;
-  duration: number; // in minutes
-}
-
-interface Calendar {
-  id: string;
-  title: string;
-  isPrimary: boolean;
-}
+import DefaultEventsList from './DefaultEventsList';
+import EventConfigurationCard from './EventConfigurationCard';
+import AddDefaultEventCard from './AddDefaultEventCard';
+import { DefaultEvent, Calendar } from '../types';
 
 const CalendarEventsManager: React.FC = () => {
   const [calendars, setCalendars] = useState<Calendar[]>([]);
-  const [selectedCalendarId, setSelectedCalendarId] = useState<string>('');
+  const [showAddEventCard, setShowAddEventCard] = useState(false);
   const [defaultEvents, setDefaultEvents] = useState<DefaultEvent[]>([
-    { name: 'Sleep', location: 'casa yaya', duration: 480 },
-    { name: 'Lunch', location: 'casa yaya', duration: 60 },
-    { name: 'Gym', location: '', duration: 90 },
+    { name: 'Sleep', location: 'casa yaya', duration: 480, calendarId: '' },
+    { name: 'Lunch', location: 'casa yaya', duration: 30, calendarId: '' },
+    { name: 'Gym', location: '', duration: 60, calendarId: '' },
+    { name: 'Shower', location: 'Gym', duration: 30, calendarId: '' },
   ]);
   const [selectedEvent, setSelectedEvent] = useState<DefaultEvent | null>(null);
 
   useEffect(() => {
     requestCalendarPermissions();
+    loadDefaultEvents();
   }, []);
+
+  const loadDefaultEvents = async () => {
+    try {
+      const storedEvents = await AsyncStorage.getItem('defaultEvents');
+      if (storedEvents) {
+        setDefaultEvents(JSON.parse(storedEvents));
+      }
+    } catch (error) {
+      console.error('Error loading default events:', error);
+    }
+  };
+
+  const saveDefaultEvents = async (events: DefaultEvent[]) => {
+    try {
+      await AsyncStorage.setItem('defaultEvents', JSON.stringify(events));
+    } catch (error) {
+      console.error('Error saving default events:', error);
+    }
+  };
+
+  const handleAddDefaultEvent = (newEvent: DefaultEvent) => {
+    const updatedEvents = [...defaultEvents, newEvent];
+    setDefaultEvents(updatedEvents);
+    saveDefaultEvents(updatedEvents);
+    setShowAddEventCard(false);
+  };
+
+  const handleDeleteDefaultEvent = (eventToDelete: DefaultEvent) => {
+    const updatedEvents = defaultEvents.filter(
+      (event) => event.name !== eventToDelete.name,
+    );
+    setDefaultEvents(updatedEvents);
+    saveDefaultEvents(updatedEvents);
+  };
 
   const requestCalendarPermissions = async () => {
     try {
@@ -62,31 +82,30 @@ const CalendarEventsManager: React.FC = () => {
         isPrimary: cal.isPrimary,
       }));
       setCalendars(formattedCalendars);
-
-      const primaryCalendar = formattedCalendars.find((cal) => cal.isPrimary);
-      if (primaryCalendar) {
-        setSelectedCalendarId(primaryCalendar.id);
-      }
     } catch (error) {
       console.error('Error fetching calendars:', error);
     }
   };
 
-  const createEvent = async (event: DefaultEvent) => {
+  const createEvent = async (
+    event: DefaultEvent,
+    calendarId: string,
+    startTime: Date,
+  ) => {
     try {
-      const startDate = new Date();
-      const endDate = new Date(startDate.getTime() + event.duration * 60000);
+      const endTime = new Date(startTime.getTime() + event.duration * 60000);
       const eventTitle = event.location
         ? `${event.name} @ ${event.location}`
         : event.name;
 
       const eventId = await RNCalendarEvents.saveEvent(eventTitle, {
-        calendarId: selectedCalendarId,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
+        calendarId: calendarId,
+        startDate: startTime.toISOString(),
+        endDate: endTime.toISOString(),
       });
 
       Alert.alert('Success', `Event "${eventTitle}" created successfully!`);
+      setSelectedEvent(null);
       return eventId;
     } catch (error) {
       console.error('Error creating event:', error);
@@ -94,83 +113,62 @@ const CalendarEventsManager: React.FC = () => {
     }
   };
 
-  const handleEventPress = (event: DefaultEvent) => {
-    setSelectedEvent(event);
+  const renderTopContent = () => {
+    const isDisabled = showAddEventCard || selectedEvent !== null;
+    return (
+      <TouchableOpacity
+        style={[styles.addButton, isDisabled && styles.disabledButton]}
+        onPress={() => !isDisabled && setShowAddEventCard(true)}
+        disabled={isDisabled}
+      >
+        <Text
+          style={[
+            styles.addButtonText,
+            isDisabled && styles.disabledButtonText,
+          ]}
+        >
+          Add New Default Event
+        </Text>
+      </TouchableOpacity>
+    );
   };
 
-  const handleUpdateEvent = (updatedEvent: DefaultEvent) => {
-    setDefaultEvents((prev) =>
-      prev.map((e) => (e.name === updatedEvent.name ? updatedEvent : e)),
+  const renderContent = () => {
+    if (selectedEvent) {
+      return (
+        <EventConfigurationCard
+          event={selectedEvent}
+          calendars={calendars}
+          onCreateEvent={createEvent}
+          onCancel={() => setSelectedEvent(null)}
+        />
+      );
+    }
+
+    if (showAddEventCard) {
+      return (
+        <AddDefaultEventCard
+          calendars={calendars}
+          onAddEvent={handleAddDefaultEvent}
+          onCancel={() => setShowAddEventCard(false)}
+        />
+      );
+    }
+
+    return (
+      <DefaultEventsList
+        events={defaultEvents}
+        onEventPress={(event) => setSelectedEvent(event)}
+        onDeleteEvent={handleDeleteDefaultEvent}
+      />
     );
-    setSelectedEvent(null);
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Select Calendar</Text>
-      <Picker
-        selectedValue={selectedCalendarId}
-        onValueChange={(itemValue) => setSelectedCalendarId(itemValue)}
-      >
-        {calendars.map((calendar) => (
-          <Picker.Item
-            key={calendar.id}
-            label={calendar.title}
-            value={calendar.id}
-          />
-        ))}
-      </Picker>
-
-      <Text style={styles.title}>Quick Add Events</Text>
-      {defaultEvents.map((event) => (
-        <Button
-          key={event.name}
-          title={
-            event.location ? `${event.name} @ ${event.location}` : event.name
-          }
-          onPress={() => createEvent(event)}
-        />
-      ))}
-
-      <Text style={styles.title}>Customize Events</Text>
-      {defaultEvents.map((event) => (
-        <Button
-          key={event.name}
-          title={`Edit ${event.name}`}
-          onPress={() => handleEventPress(event)}
-        />
-      ))}
-
-      {selectedEvent && (
-        <View style={styles.editForm}>
-          <Text style={styles.subtitle}>Edit {selectedEvent.name}</Text>
-          <TextInput
-            style={styles.input}
-            value={selectedEvent.location}
-            onChangeText={(text) =>
-              setSelectedEvent({ ...selectedEvent, location: text })
-            }
-            placeholder="Location (optional)"
-          />
-          <TextInput
-            style={styles.input}
-            value={selectedEvent.duration.toString()}
-            onChangeText={(text) =>
-              setSelectedEvent({
-                ...selectedEvent,
-                duration: parseInt(text) || 0,
-              })
-            }
-            placeholder="Duration (minutes)"
-            keyboardType="numeric"
-          />
-          <Button
-            title="Update"
-            onPress={() => handleUpdateEvent(selectedEvent)}
-          />
-        </View>
-      )}
-    </ScrollView>
+    <View style={styles.container}>
+      <View style={styles.topContent}>{renderTopContent()}</View>
+      <View style={styles.bottomContent}>{renderContent()}</View>
+    </View>
   );
 };
 
@@ -178,30 +176,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    justifyContent: 'space-between',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 10,
+  topContent: {
+    flex: 1,
   },
-  subtitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-  },
-  editForm: {
-    marginTop: 20,
+  bottomContent: {},
+  addButton: {
+    backgroundColor: '#6200ee',
     padding: 10,
-    backgroundColor: '#f0f0f0',
     borderRadius: 5,
+    marginBottom: 20,
+  },
+  addButtonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  disabledButton: {
+    backgroundColor: '#cccccc',
+  },
+  disabledButtonText: {
+    color: '#666666',
   },
 });
 
