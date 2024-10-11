@@ -30,17 +30,19 @@ const EventConfigurationCard: React.FC<EventConfigurationCardProps> = ({
 }) => {
   const [name, setName] = useState(event.name);
   const [location, setLocation] = useState(event.location);
-  const [duration, setDuration] = useState(event.duration.toString());
+  const [duration, setDuration] = useState((event.duration / 60).toString());
   const [selectedCalendarId, setSelectedCalendarId] = useState(
-    calendars.find((cal) => cal.isPrimary)?.id || '',
+    event.calendarId || calendars.find((cal) => cal.isPrimary)?.id || '',
   );
+
   const [startTime, setStartTime] = useState(new Date());
 
   const handleCreate = () => {
     const updatedEvent: DefaultEvent = {
       name,
       location,
-      duration: parseInt(duration),
+      duration: parseFloat(duration) * 60, // Convert hours to minutes
+      calendarId: selectedCalendarId, // Add this line
     };
     onCreateEvent(updatedEvent, selectedCalendarId, startTime);
   };
@@ -60,11 +62,12 @@ const EventConfigurationCard: React.FC<EventConfigurationCardProps> = ({
         onChangeText={setLocation}
         placeholder="Location (optional)"
       />
+      <Text style={styles.label}>Duration (hours)</Text>
       <TextInput
         style={styles.input}
         value={duration}
         onChangeText={setDuration}
-        placeholder="Duration (minutes)"
+        placeholder="Duration"
         keyboardType="numeric"
       />
       <Picker
@@ -113,7 +116,6 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderWidth: 1,
     borderRadius: 5,
-    marginBottom: 10,
     paddingHorizontal: 10,
   },
   picker: {
@@ -138,6 +140,13 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     textAlign: 'center',
+  },
+  inputContainer: {
+    marginBottom: 15,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
   },
 });
 
