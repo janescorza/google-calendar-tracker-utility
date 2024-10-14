@@ -1,23 +1,21 @@
-// TimeSelector.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors, typography, spacing } from '../styles/theme';
+import { colors, spacing } from '../styles/theme';
 
 interface TimeSelectorProps {
   onTimeSelected: (time: Date) => void;
+  initialTime: Date;
 }
 
-const TimeSelector: React.FC<TimeSelectorProps> = ({ onTimeSelected }) => {
-  const [selectedTime, setSelectedTime] = useState<Date>(new Date());
+const TimeSelector: React.FC<TimeSelectorProps> = ({
+  onTimeSelected,
+  initialTime,
+}) => {
+  const [selectedTime, setSelectedTime] = useState<Date>(initialTime);
 
   useEffect(() => {
-    // Round to nearest 15 minutes
-    const roundedTime = new Date(
-      Math.ceil(selectedTime.getTime() / 900000) * 900000,
-    );
-    setSelectedTime(roundedTime);
-    onTimeSelected(roundedTime);
-  }, []);
+    setSelectedTime(initialTime);
+  }, [initialTime]);
 
   const generateTimeOptions = () => {
     const options = [];
@@ -34,11 +32,10 @@ const TimeSelector: React.FC<TimeSelectorProps> = ({ onTimeSelected }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Start time</Text>
       <View style={styles.buttonContainer}>
         {generateTimeOptions().map((time, index) => (
           <TouchableOpacity
-            key={index}
+            key={time.getTime()}
             style={[
               styles.timeButton,
               time.getTime() === selectedTime.getTime() &&
@@ -68,10 +65,6 @@ const TimeSelector: React.FC<TimeSelectorProps> = ({ onTimeSelected }) => {
 const styles = StyleSheet.create({
   container: {
     marginBottom: spacing.medium,
-  },
-  label: {
-    ...typography.body,
-    marginBottom: spacing.small,
   },
   buttonContainer: {
     flexDirection: 'row',
