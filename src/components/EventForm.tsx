@@ -1,7 +1,9 @@
+// EventForm.tsx
 import React from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Calendar } from '../types';
+import { colors, typography, spacing } from '../styles/theme';
 
 interface EventFormProps {
   name: string;
@@ -34,11 +36,13 @@ const EventForm: React.FC<EventFormProps> = ({
       </View>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Location (optional)</Text>
+        <Text style={styles.label}>Location</Text>
         <TextInput
           style={styles.input}
           value={location}
           onChangeText={setLocation}
+          placeholder="(optional)"
+          placeholderTextColor={styles.placeholderTextColor.color}
         />
       </View>
 
@@ -75,21 +79,26 @@ const EventForm: React.FC<EventFormProps> = ({
 const styles = StyleSheet.create({
   input: {
     height: 40,
-    borderColor: '#ddd',
+    borderColor: colors.onSurface,
     borderWidth: 1,
     borderRadius: 5,
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.small,
+    color: colors.onSurface,
+  },
+  placeholderTextColor: {
+    color: colors.placeholderTextColor, // Define the placeholder text color here
   },
   picker: {
     height: 40,
-    marginBottom: 10,
+    marginBottom: spacing.small,
+    color: colors.onSurface,
   },
   inputContainer: {
-    marginBottom: 15,
+    marginBottom: spacing.medium,
   },
   label: {
-    fontSize: 16,
-    marginBottom: 5,
+    ...typography.body,
+    marginBottom: spacing.small,
   },
 });
 

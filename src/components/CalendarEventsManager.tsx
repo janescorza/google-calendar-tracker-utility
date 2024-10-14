@@ -1,3 +1,4 @@
+// CalendarEventsManager.tsx
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Alert, TouchableOpacity, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,6 +8,7 @@ import EventConfigurationCard from './EventConfigurationCard';
 import AddDefaultEventCard from './AddDefaultEventCard';
 import { DefaultEvent, Calendar } from '../types';
 import Snackbar from 'react-native-snackbar';
+import { colors, layout, spacing, buttons } from '../styles/theme';
 
 const CalendarEventsManager: React.FC = () => {
   const [calendars, setCalendars] = useState<Calendar[]>([]);
@@ -182,8 +184,8 @@ const CalendarEventsManager: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 20,
+    ...layout.container,
+    padding: spacing.medium,
     justifyContent: 'space-between',
   },
   topContent: {
@@ -191,24 +193,19 @@ const styles = StyleSheet.create({
   },
   bottomContent: {},
   addButton: {
-    borderColor: '#6200ee',
-    borderWidth: 1,
-    backgroundColor: 'transparent',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 20,
+    ...buttons.secondary,
+    marginBottom: spacing.large,
   },
   addButtonText: {
-    color: '#6200ee',
-    textAlign: 'center',
+    ...buttons.secondaryText,
     fontWeight: 'bold',
   },
   disabledButton: {
-    backgroundColor: '#cccccc',
-    borderColor: '#cccccc',
+    backgroundColor: colors.surface,
+    borderColor: colors.surface,
   },
   disabledButtonText: {
-    color: '#666666',
+    color: colors.onSurfaceDisabled,
   },
 });
 

@@ -1,6 +1,7 @@
 // TimeSelector.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { colors, typography, spacing } from '../styles/theme';
 
 interface TimeSelectorProps {
   onTimeSelected: (time: Date) => void;
@@ -66,29 +67,31 @@ const TimeSelector: React.FC<TimeSelectorProps> = ({ onTimeSelected }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 15,
+    marginBottom: spacing.medium,
   },
   label: {
-    fontSize: 16,
-    marginBottom: 5,
+    ...typography.body,
+    marginBottom: spacing.small,
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   timeButton: {
-    padding: 10,
+    padding: spacing.small,
     borderRadius: 5,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: colors.surface,
+    borderColor: colors.primary,
+    borderWidth: 1,
   },
   selectedButton: {
-    backgroundColor: '#6200ee',
+    backgroundColor: colors.primary,
   },
   timeText: {
-    color: '#000',
+    color: colors.onSurface,
   },
   selectedText: {
-    color: '#fff',
+    color: colors.onPrimary,
   },
 });
 

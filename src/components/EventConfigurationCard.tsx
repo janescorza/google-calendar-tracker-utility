@@ -1,8 +1,10 @@
+// EventConfigurationCard.tsx
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { DefaultEvent, Calendar } from '../types';
 import EventForm from './EventForm';
 import TimeSelector from './TimeSelector';
+import { typography, layout, spacing, buttons } from '../styles/theme';
 
 interface EventConfigurationCardProps {
   event: DefaultEvent;
@@ -76,42 +78,33 @@ const EventConfigurationCard: React.FC<EventConfigurationCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#f8f8f8',
-    padding: 20,
-    borderRadius: 10,
-    marginTop: 20,
+    ...layout.card,
+    marginTop: spacing.large,
   },
   title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
+    ...typography.title,
+    marginBottom: spacing.medium,
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 20,
+    marginTop: spacing.large,
   },
   button: {
     flex: 1,
-    padding: 10,
-    borderRadius: 5,
-    marginHorizontal: 5,
+    marginHorizontal: spacing.small,
   },
   cancelButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#6200ee',
+    ...buttons.secondary,
   },
   cancelButtonText: {
-    color: '#6200ee',
-    textAlign: 'center',
+    ...buttons.secondaryText,
   },
   createButton: {
-    backgroundColor: '#6200ee',
+    ...buttons.primary,
   },
   buttonText: {
-    color: 'white',
-    textAlign: 'center',
+    ...buttons.primaryText,
   },
 });
 
