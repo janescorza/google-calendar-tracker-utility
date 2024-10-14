@@ -1,3 +1,4 @@
+// CalendarEventsManager.tsx
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Alert, TouchableOpacity, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -6,6 +7,8 @@ import DefaultEventsList from './DefaultEventsList';
 import EventConfigurationCard from './EventConfigurationCard';
 import AddDefaultEventCard from './AddDefaultEventCard';
 import { DefaultEvent, Calendar } from '../types';
+import Snackbar from 'react-native-snackbar';
+import { colors, layout, spacing, buttons } from '../styles/theme';
 
 const CalendarEventsManager: React.FC = () => {
   const [calendars, setCalendars] = useState<Calendar[]>([]);
@@ -104,12 +107,18 @@ const CalendarEventsManager: React.FC = () => {
         endDate: endTime.toISOString(),
       });
 
-      Alert.alert('Success', `Event "${eventTitle}" created successfully!`);
+      Snackbar.show({
+        text: `Event "${eventTitle}" created successfully!`,
+        duration: Snackbar.LENGTH_SHORT,
+      });
       setSelectedEvent(null);
       return eventId;
     } catch (error) {
       console.error('Error creating event:', error);
-      Alert.alert('Error', 'Failed to create event. Please try again.');
+      Snackbar.show({
+        text: 'Failed to create event. Please try again.',
+        duration: Snackbar.LENGTH_SHORT,
+      });
     }
   };
 
@@ -158,6 +167,7 @@ const CalendarEventsManager: React.FC = () => {
     return (
       <DefaultEventsList
         events={defaultEvents}
+        calendars={calendars}
         onEventPress={(event) => setSelectedEvent(event)}
         onDeleteEvent={handleDeleteDefaultEvent}
       />
@@ -174,8 +184,8 @@ const CalendarEventsManager: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 20,
+    ...layout.container,
+    padding: spacing.medium,
     justifyContent: 'space-between',
   },
   topContent: {
@@ -183,21 +193,19 @@ const styles = StyleSheet.create({
   },
   bottomContent: {},
   addButton: {
-    backgroundColor: '#6200ee',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 20,
+    ...buttons.secondary,
+    marginBottom: spacing.large,
   },
   addButtonText: {
-    color: 'white',
-    textAlign: 'center',
+    ...buttons.secondaryText,
     fontWeight: 'bold',
   },
   disabledButton: {
-    backgroundColor: '#cccccc',
+    backgroundColor: colors.surface,
+    borderColor: colors.surface,
   },
   disabledButtonText: {
-    color: '#666666',
+    color: colors.onSurfaceDisabled,
   },
 });
 

@@ -1,3 +1,4 @@
+// DefaultEventsList.tsx
 import React from 'react';
 import {
   View,
@@ -9,21 +10,29 @@ import {
   Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { DefaultEvent } from '../types';
+import { DefaultEvent, Calendar } from '../types';
+import { colors, typography, spacing } from '../styles/theme';
 
 const { height: screenHeight } = Dimensions.get('window');
 
 interface DefaultEventsListProps {
   events: DefaultEvent[];
+  calendars: Calendar[];
   onEventPress: (event: DefaultEvent) => void;
   onDeleteEvent: (event: DefaultEvent) => void;
 }
 
 const DefaultEventsList: React.FC<DefaultEventsListProps> = ({
   events,
+  calendars,
   onEventPress,
   onDeleteEvent,
 }) => {
+  const getCalendarName = (calendarId: string) => {
+    const calendar = calendars.find((cal) => cal.id === calendarId);
+    return calendar ? calendar.title : 'Unknown Calendar';
+  };
+
   const handleDeletePress = (event: DefaultEvent) => {
     Alert.alert(
       'Delete Event',
@@ -50,14 +59,14 @@ const DefaultEventsList: React.FC<DefaultEventsListProps> = ({
           {item.location ? `${item.name} @ ${item.location}` : item.name}
         </Text>
         <Text style={styles.eventDuration}>
-          Default - {item.duration / 60}h
+          {getCalendarName(item.calendarId)} - {item.duration / 60}h
         </Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.deleteButton}
         onPress={() => handleDeletePress(item)}
       >
-        <Icon name="delete" size={24} color="#d3d3d3" />
+        <Icon name="delete" size={24} color={colors.onSurfaceSecondary} />
       </TouchableOpacity>
     </View>
   );
@@ -77,12 +86,11 @@ const DefaultEventsList: React.FC<DefaultEventsListProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20,
+    marginBottom: spacing.large,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    ...typography.title,
+    marginBottom: spacing.medium,
   },
   list: {
     maxHeight: screenHeight * 0.6,
@@ -90,24 +98,24 @@ const styles = StyleSheet.create({
   eventItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: colors.surface,
     borderRadius: 5,
-    marginBottom: 10,
+    marginBottom: spacing.medium,
   },
   eventContent: {
     flex: 1,
-    padding: 15,
+    padding: spacing.medium,
   },
   eventName: {
-    fontSize: 16,
+    ...typography.body,
     fontWeight: 'bold',
   },
   eventDuration: {
-    fontSize: 14,
-    color: '#666',
+    ...typography.body,
+    color: colors.onSurfaceSecondary,
   },
   deleteButton: {
-    padding: 15,
+    padding: spacing.medium,
   },
 });
 

@@ -3,7 +3,7 @@ export interface DefaultEvent {
   name: string;
   location: string;
   duration: number; // in minutes
-  calendarId: string; // Add this line
+  calendarId: string;
 }
 
 export interface Calendar {

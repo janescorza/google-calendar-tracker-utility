@@ -2,6 +2,7 @@
 import React from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import CalendarEventsManager from './src/components/CalendarEventsManager';
+import { colors, typography, layout, spacing } from './src/styles/theme';
 
 const App: React.FC = () => {
   return (
@@ -17,22 +18,19 @@ const App: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#fff',
+    ...layout.container,
   },
   header: {
-    padding: 16,
+    padding: spacing.medium,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: colors.surface,
     marginTop: 32,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    ...typography.title,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
+    ...typography.subtitle,
   },
 });
 

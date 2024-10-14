@@ -1,3 +1,4 @@
+// AddDefaultEventCard.tsx
 import React, { useState, useMemo } from 'react';
 import {
   View,
@@ -8,6 +9,7 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { DefaultEvent, Calendar } from '../types';
+import { colors, typography, layout, spacing, buttons } from '../styles/theme';
 
 interface AddDefaultEventCardProps {
   calendars: Calendar[];
@@ -24,7 +26,7 @@ const AddDefaultEventCard: React.FC<AddDefaultEventCardProps> = ({
   const [location, setLocation] = useState('');
   const [duration, setDuration] = useState('');
   const [selectedCalendarId, setSelectedCalendarId] = useState(
-    calendars.find((cal) => cal.isPrimary)?.id || '',
+    calendars.find((cal) => cal.isPrimary)?.id ?? '',
   );
 
   const isFormValid = useMemo(() => {
@@ -54,11 +56,13 @@ const AddDefaultEventCard: React.FC<AddDefaultEventCardProps> = ({
       </View>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Location (optional)</Text>
+        <Text style={styles.label}>Location</Text>
         <TextInput
           style={styles.input}
           value={location}
           onChangeText={setLocation}
+          placeholder="(optional)"
+          placeholderTextColor={styles.placeholderTextColor.color}
         />
       </View>
 
@@ -105,7 +109,14 @@ const AddDefaultEventCard: React.FC<AddDefaultEventCardProps> = ({
           onPress={handleAdd}
           disabled={!isFormValid}
         >
-          <Text style={styles.addButtonText}>Add</Text>
+          <Text
+            style={[
+              styles.addButtonText,
+              !isFormValid && styles.disabledButtonText,
+            ]}
+          >
+            Add
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -114,63 +125,66 @@ const AddDefaultEventCard: React.FC<AddDefaultEventCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#f8f8f8',
-    padding: 20,
-    borderRadius: 10,
-    marginTop: 20,
+    ...layout.card,
+    marginTop: spacing.large,
   },
   title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
+    ...typography.title,
+    marginBottom: spacing.medium,
   },
   input: {
     height: 40,
-    borderColor: '#ddd',
+    borderColor: colors.onSurface,
     borderWidth: 1,
     borderRadius: 5,
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.small,
+    color: colors.onSurface,
+  },
+  placeholderTextColor: {
+    color: colors.placeholderTextColor, // Define the placeholder text color here
   },
   picker: {
     height: 40,
-    marginBottom: 10,
+    marginBottom: spacing.small,
+    color: colors.onSurface,
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 20,
+    marginTop: spacing.large,
   },
   button: {
     flex: 1,
-    padding: 10,
+    padding: spacing.medium,
     borderRadius: 5,
-    marginHorizontal: 5,
+    marginHorizontal: spacing.small,
   },
   cancelButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#6200ee',
+    ...buttons.secondary,
   },
   createButton: {
-    backgroundColor: '#6200ee',
+    ...buttons.primary,
   },
   disabledButton: {
-    backgroundColor: '#ccc',
+    backgroundColor: colors.surface,
+    borderColor: colors.onSurfaceDisabled,
+    borderWidth: 1,
+  },
+  disabledButtonText: {
+    color: colors.onSurfaceDisabled,
   },
   cancelButtonText: {
-    color: '#6200ee',
-    textAlign: 'center',
+    ...buttons.secondaryText,
   },
   addButtonText: {
-    color: 'white',
-    textAlign: 'center',
+    ...buttons.primaryText,
   },
   inputContainer: {
-    marginBottom: 15,
+    marginBottom: spacing.medium,
   },
   label: {
-    fontSize: 16,
-    marginBottom: 5,
+    ...typography.body,
+    marginBottom: spacing.small,
   },
 });
 
