@@ -6,6 +6,7 @@ import RNCalendarEvents from 'react-native-calendar-events';
 import DefaultEventsList from './DefaultEventsList';
 import EventConfigurationCard from './EventConfigurationCard';
 import AddDefaultEventCard from './AddDefaultEventCard';
+import EditDefaultEventCard from './EditDefaultEventCard';
 import { DefaultEvent, Calendar } from '../types';
 import Snackbar from 'react-native-snackbar';
 import { colors, layout, spacing, buttons } from '../styles/theme';
@@ -20,6 +21,7 @@ const CalendarEventsManager: React.FC = () => {
     { name: 'Shower', location: 'Gym', duration: 30, calendarId: '' },
   ]);
   const [selectedEvent, setSelectedEvent] = useState<DefaultEvent | null>(null);
+  const [editingEvent, setEditingEvent] = useState<DefaultEvent | null>(null);
 
   useEffect(() => {
     requestCalendarPermissions();
@@ -58,6 +60,23 @@ const CalendarEventsManager: React.FC = () => {
     );
     setDefaultEvents(updatedEvents);
     saveDefaultEvents(updatedEvents);
+  };
+
+  const handleEditDefaultEvent = (eventToEdit: DefaultEvent) => {
+    setEditingEvent(eventToEdit);
+  };
+
+  const handleSaveEditedEvent = (updatedEvent: DefaultEvent) => {
+    const updatedEvents = defaultEvents.map((event) =>
+      event.name === updatedEvent.name ? updatedEvent : event,
+    );
+    setDefaultEvents(updatedEvents);
+    saveDefaultEvents(updatedEvents);
+    setEditingEvent(null);
+    Snackbar.show({
+      text: `Event "${updatedEvent.name}" updated successfully!`,
+      duration: Snackbar.LENGTH_SHORT,
+    });
   };
 
   const requestCalendarPermissions = async () => {
@@ -123,7 +142,8 @@ const CalendarEventsManager: React.FC = () => {
   };
 
   const renderTopContent = () => {
-    const isDisabled = showAddEventCard || selectedEvent !== null;
+    const isDisabled =
+      showAddEventCard || selectedEvent !== null || editingEvent !== null;
     return (
       <TouchableOpacity
         style={[styles.addButton, isDisabled && styles.disabledButton]}
@@ -164,12 +184,24 @@ const CalendarEventsManager: React.FC = () => {
       );
     }
 
+    if (editingEvent) {
+      return (
+        <EditDefaultEventCard
+          event={editingEvent}
+          calendars={calendars}
+          onSaveEvent={handleSaveEditedEvent}
+          onCancel={() => setEditingEvent(null)}
+        />
+      );
+    }
+
     return (
       <DefaultEventsList
         events={defaultEvents}
         calendars={calendars}
         onEventPress={(event) => setSelectedEvent(event)}
         onDeleteEvent={handleDeleteDefaultEvent}
+        onEditEvent={handleEditDefaultEvent}
       />
     );
   };
