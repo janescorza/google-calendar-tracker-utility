@@ -24,15 +24,14 @@ export const useEventTime = ({
     if (!isNaN(durationHours) && durationHours > 0) {
       setEndTime(calculateEndTime(startTime, durationHours * 60));
       setDurationError(null);
-    } else {
-      setDurationError('Invalid duration. Please enter a positive number.');
     }
   };
 
   const handleStartTimeChange = (time: Date) => {
     setStartTime(time);
-    if (!isNaN(parseFloat(duration))) {
-      setEndTime(calculateEndTime(time, parseFloat(duration) * 60));
+    const durationValue = parseFloat(duration);
+    if (!isNaN(durationValue) && durationValue > 0) {
+      setEndTime(calculateEndTime(time, durationValue * 60));
     }
   };
 
@@ -44,15 +43,25 @@ export const useEventTime = ({
 
   const handleDurationChange = (newDuration: string) => {
     setDuration(newDuration);
-    const durationHours = parseFloat(newDuration);
-    if (!newDuration.endsWith('.')) {
-      updateEndTimeFromDuration(durationHours);
+    // Only update end time if we have a valid positive number
+    if (newDuration !== '') {
+      const durationHours = parseFloat(newDuration);
+      if (
+        !isNaN(durationHours) &&
+        durationHours > 0 &&
+        !newDuration.endsWith('.')
+      ) {
+        updateEndTimeFromDuration(durationHours);
+      }
     }
   };
 
   useEffect(() => {
-    if (!duration.endsWith('.')) {
-      updateEndTimeFromDuration(parseFloat(duration));
+    if (duration !== '' && !duration.endsWith('.')) {
+      const durationValue = parseFloat(duration);
+      if (!isNaN(durationValue) && durationValue > 0) {
+        updateEndTimeFromDuration(durationValue);
+      }
     }
   }, [startTime, duration]);
 

@@ -49,9 +49,9 @@ const EventForm = forwardRef<EventFormRef, EventFormProps>(
     };
 
     const handleDurationChange = (value: string) => {
-      setDuration(value);
-      if (durationError) {
-        setDurationError(null);
+      // Allow empty input or valid numeric input
+      if (value === '' || /^[0-9]*\.?[0-9]*$/.test(value)) {
+        setDuration(value);
       }
     };
 

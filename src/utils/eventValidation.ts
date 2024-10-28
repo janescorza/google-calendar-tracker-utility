@@ -6,7 +6,25 @@ export const validateAndFormatDuration = (
   formattedValue: string;
   error: string | null;
 } => {
-  // Allow for partial input (like "1.") during typing
+  // Allow empty input during typing
+  if (duration.trim() === '') {
+    return {
+      isValid: false,
+      formattedValue: '',
+      error: 'Duration is required',
+    };
+  }
+
+  // Allow partial decimal input during typing
+  if (duration === '0' || duration === '.' || duration === '0.') {
+    return {
+      isValid: false,
+      formattedValue: duration,
+      error: 'Please enter a valid duration',
+    };
+  }
+
+  // Allow for partial input (like "1.")
   if (duration.endsWith('.')) {
     return {
       isValid: true,
@@ -16,15 +34,6 @@ export const validateAndFormatDuration = (
   }
 
   const numericValue = parseFloat(duration);
-
-  // Empty check
-  if (duration.trim() === '') {
-    return {
-      isValid: false,
-      formattedValue: '',
-      error: 'Duration is required',
-    };
-  }
 
   // Basic numeric validation
   if (isNaN(numericValue) || numericValue <= 0) {
@@ -36,7 +45,6 @@ export const validateAndFormatDuration = (
   }
 
   // Only round and validate on blur or form submission
-  // This allows for partial input during typing
   if (!duration.includes('.') || duration.split('.')[1]?.length === 2) {
     const roundedValue = Math.round(numericValue * 4) / 4;
 

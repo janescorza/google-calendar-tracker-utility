@@ -35,12 +35,19 @@ export const useEventForm = ({
   });
 
   const handleDurationChange = (newDuration: string) => {
+    // Allow empty string and don't validate it immediately
+    if (newDuration === '') {
+      handleRawDurationChange('');
+      setDurationError('Duration is required');
+      return;
+    }
+
+    // Only validate non-empty values
     const validationResult = validateAndFormatDuration(newDuration);
     setDurationError(validationResult.error);
 
-    if (validationResult.isValid) {
-      handleRawDurationChange(validationResult.formattedValue);
-    }
+    // Always update the duration, even if invalid
+    handleRawDurationChange(newDuration);
   };
 
   const formRef = useRef<EventFormRef>(null);
@@ -50,6 +57,12 @@ export const useEventForm = ({
   }, [name, duration, durationError]);
 
   const validateForm = () => {
+    // Only validate if there's a value
+    if (duration === '') {
+      setDurationError('Duration is required');
+      return false;
+    }
+
     const validationResult = validateAndFormatDuration(duration);
     setDurationError(validationResult.error);
     return validationResult.isValid;
@@ -61,7 +74,7 @@ export const useEventForm = ({
   } => ({
     name,
     location,
-    duration: parseFloat(duration) * 60, // Convert hours to minutes
+    duration: parseFloat(duration || '0') * 60, // Handle empty string case
     calendarId: selectedCalendarId,
     startTime,
     endTime,
