@@ -143,7 +143,7 @@ const CalendarEventsManager: React.FC = () => {
             modalState && styles.disabledButtonText,
           ]}
         >
-          Add New Default Event
+          Add New Base Event
         </Text>
       </TouchableOpacity>
       {renderContent()}

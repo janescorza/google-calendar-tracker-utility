@@ -70,7 +70,11 @@ const EventInstanceCreationCard: React.FC<EventInstanceCreationCardProps> = ({
   ]);
 
   return (
-    <CardContainer title="Instance Creation From Base Event">
+    <CardContainer title="Instance creation">
+      <Text style={styles.subtitle}>
+        Create an instance of an event on your calendar from a previously
+        configured Base Event
+      </Text>
       <EventForm
         ref={formRef}
         name={name}
@@ -112,6 +116,11 @@ const styles = StyleSheet.create({
   label: {
     ...typography.body,
     marginBottom: spacing.small,
+  },
+  subtitle: {
+    ...typography.body,
+    marginBottom: spacing.medium,
+    fontStyle: 'italic',
   },
 });
 

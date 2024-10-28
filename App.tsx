@@ -9,7 +9,9 @@ const App: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>The Calendarinator</Text>
-        <Text style={styles.subtitle}>My utility for Calendar Creation</Text>
+        <Text style={styles.subtitle}>
+          My utility for event-base time tracking
+        </Text>
       </View>
       <CalendarEventsManager />
     </SafeAreaView>

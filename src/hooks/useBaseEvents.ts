@@ -8,7 +8,7 @@ export const useBaseEvents = () => {
       const storedEvents = await AsyncStorage.getItem('BaseEvents');
       return storedEvents ? JSON.parse(storedEvents) : [];
     } catch (error) {
-      console.error('Error loading default events:', error);
+      console.error('Error loading base events:', error);
       return [];
     }
   };
@@ -17,7 +17,7 @@ export const useBaseEvents = () => {
     try {
       await AsyncStorage.setItem('BaseEvents', JSON.stringify(events));
     } catch (error) {
-      console.error('Error saving default events:', error);
+      console.error('Error saving base events:', error);
     }
   };
 

@@ -57,7 +57,7 @@ const BaseEventsList: React.FC<BaseEventsListProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Default Events</Text>
+      <Text style={styles.title}>Base Events</Text>
       <FlatList
         style={styles.list}
         data={events}
