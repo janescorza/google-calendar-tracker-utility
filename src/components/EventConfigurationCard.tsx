@@ -1,8 +1,7 @@
-// EventConfigurationCard.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { DefaultEvent, Calendar } from '../types';
-import EventForm from './EventForm';
+import EventForm, { EventFormRef } from './EventForm';
 import TimeSelector from './TimeSelector';
 import { typography, layout, spacing, buttons, colors } from '../styles/theme';
 
@@ -49,6 +48,9 @@ const EventConfigurationCard: React.FC<EventConfigurationCardProps> = ({
   const [endTime, setEndTime] = useState(
     calculateEndTime(startTime, event.duration),
   );
+  const [durationError, setDurationError] = useState<string | null>(null);
+
+  const formRef = useRef<EventFormRef>(null);
 
   useEffect(() => {
     updateEndTime();
@@ -56,7 +58,9 @@ const EventConfigurationCard: React.FC<EventConfigurationCardProps> = ({
 
   const updateEndTime = () => {
     const durationInMinutes = parseFloat(duration) * 60;
-    setEndTime(calculateEndTime(startTime, durationInMinutes));
+    if (!isNaN(durationInMinutes) && durationInMinutes > 0) {
+      setEndTime(calculateEndTime(startTime, durationInMinutes));
+    }
   };
 
   const handleStartTimeChange = (time: Date) => {
@@ -72,15 +76,19 @@ const EventConfigurationCard: React.FC<EventConfigurationCardProps> = ({
   const handleDurationChange = (newDuration: string) => {
     setDuration(newDuration);
     const durationInMinutes = parseFloat(newDuration) * 60;
-    setEndTime(calculateEndTime(startTime, durationInMinutes));
+    if (!isNaN(durationInMinutes) && durationInMinutes > 0) {
+      setEndTime(calculateEndTime(startTime, durationInMinutes));
+    }
   };
 
-  const isValidDuration = (): boolean => {
-    const durationInMinutes = parseFloat(duration) * 60;
-    return durationInMinutes % 15 === 0 && durationInMinutes > 0;
-  };
+  const isFormValid = useMemo(() => {
+    return name.trim() !== '' && !durationError;
+  }, [name, durationError]);
 
   const handleCreate = () => {
+    const isDurationValid = formRef.current?.validateForm() ?? false;
+    if (!isDurationValid || !isFormValid) return;
+
     const updatedEvent: DefaultEvent = {
       name,
       location,
@@ -95,6 +103,7 @@ const EventConfigurationCard: React.FC<EventConfigurationCardProps> = ({
       <Text style={styles.title}>Event Creation from Default</Text>
 
       <EventForm
+        ref={formRef}
         name={name}
         setName={setName}
         location={location}
@@ -104,6 +113,8 @@ const EventConfigurationCard: React.FC<EventConfigurationCardProps> = ({
         selectedCalendarId={selectedCalendarId}
         setSelectedCalendarId={setSelectedCalendarId}
         calendars={calendars}
+        durationError={durationError}
+        setDurationError={setDurationError}
       />
 
       <Text style={styles.label}>Start time</Text>
@@ -129,15 +140,15 @@ const EventConfigurationCard: React.FC<EventConfigurationCardProps> = ({
           style={[
             styles.button,
             styles.createButton,
-            !isValidDuration() && styles.disabledButton,
+            !isFormValid && styles.disabledButton,
           ]}
           onPress={handleCreate}
-          disabled={!isValidDuration()}
+          disabled={!isFormValid}
         >
           <Text
             style={[
               styles.buttonText,
-              !isValidDuration() && styles.disabledButtonText,
+              !isFormValid && styles.disabledButtonText,
             ]}
           >
             Create Instance

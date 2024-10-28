@@ -1,51 +1,52 @@
-// AddDefaultEventCard.tsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { DefaultEvent, Calendar } from '../types';
 import EventForm, { EventFormRef } from './EventForm';
 import { colors, typography, layout, spacing, buttons } from '../styles/theme';
 
-interface AddDefaultEventCardProps {
+interface EditDefaultEventCardProps {
+  event: DefaultEvent;
   calendars: Calendar[];
-  onAddEvent: (event: DefaultEvent) => void;
+  onSaveEvent: (updatedEvent: DefaultEvent) => void;
   onCancel: () => void;
 }
 
-const AddDefaultEventCard: React.FC<AddDefaultEventCardProps> = ({
+const EditDefaultEventCard: React.FC<EditDefaultEventCardProps> = ({
+  event,
   calendars,
-  onAddEvent,
+  onSaveEvent,
   onCancel,
 }) => {
-  const [name, setName] = useState('');
-  const [location, setLocation] = useState('');
-  const [duration, setDuration] = useState('');
+  const [name, setName] = useState(event.name);
+  const [location, setLocation] = useState(event.location);
+  const [duration, setDuration] = useState((event.duration / 60).toString());
   const [selectedCalendarId, setSelectedCalendarId] = useState(
-    calendars.find((cal) => cal.isPrimary)?.id ?? '',
+    event.calendarId,
   );
   const [durationError, setDurationError] = useState<string | null>(null);
-  const formRef = React.useRef<EventFormRef>(null);
+  const formRef = useRef<EventFormRef>(null);
 
   const isFormValid = useMemo(() => {
-    return name.trim() !== '' && !durationError && duration !== '';
-  }, [name, duration, durationError]);
+    return name.trim() !== '' && !durationError;
+  }, [name, durationError]);
 
-  const handleAdd = () => {
+  const handleSave = () => {
     const isDurationValid = formRef.current?.validateForm() ?? false;
-
     if (!isDurationValid || !isFormValid) return;
 
-    const newEvent: DefaultEvent = {
+    const updatedEvent: DefaultEvent = {
+      ...event,
       name,
       location,
-      duration: parseFloat(duration) * 60,
+      duration: parseFloat(duration) * 60, // Convert hours to minutes
       calendarId: selectedCalendarId,
     };
-    onAddEvent(newEvent);
+    onSaveEvent(updatedEvent);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Add New Default Event</Text>
+      <Text style={styles.title}>Edit Default Event</Text>
 
       <EventForm
         ref={formRef}
@@ -72,19 +73,19 @@ const AddDefaultEventCard: React.FC<AddDefaultEventCardProps> = ({
         <TouchableOpacity
           style={[
             styles.button,
-            styles.addButton,
+            styles.saveButton,
             !isFormValid && styles.disabledButton,
           ]}
-          onPress={handleAdd}
+          onPress={handleSave}
           disabled={!isFormValid}
         >
           <Text
             style={[
-              styles.addButtonText,
+              styles.saveButtonText,
               !isFormValid && styles.disabledButtonText,
             ]}
           >
-            Add
+            Save
           </Text>
         </TouchableOpacity>
       </View>
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
   cancelButton: {
     ...buttons.secondary,
   },
-  addButton: {
+  saveButton: {
     ...buttons.primary,
   },
   disabledButton: {
@@ -129,9 +130,9 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     ...buttons.secondaryText,
   },
-  addButtonText: {
+  saveButtonText: {
     ...buttons.primaryText,
   },
 });
 
-export default AddDefaultEventCard;
+export default EditDefaultEventCard;

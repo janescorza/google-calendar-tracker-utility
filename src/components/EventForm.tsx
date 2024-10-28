@@ -1,9 +1,14 @@
 // EventForm.tsx
-import React from 'react';
+import React, { forwardRef, useImperativeHandle } from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Calendar } from '../types';
 import { colors, typography, spacing } from '../styles/theme';
+import { validateAndFormatDuration } from '../utils/eventValidation';
+
+export interface EventFormRef {
+  validateForm: () => boolean;
+}
 
 interface EventFormProps {
   name: string;
@@ -15,66 +20,109 @@ interface EventFormProps {
   selectedCalendarId: string;
   setSelectedCalendarId: (id: string) => void;
   calendars: Calendar[];
+  durationError: string | null;
+  setDurationError: (error: string | null) => void;
 }
 
-const EventForm: React.FC<EventFormProps> = ({
-  name,
-  setName,
-  location,
-  setLocation,
-  duration,
-  setDuration,
-  selectedCalendarId,
-  setSelectedCalendarId,
-  calendars,
-}) => {
-  return (
-    <>
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Event Name</Text>
-        <TextInput style={styles.input} value={name} onChangeText={setName} />
-      </View>
+const EventForm = forwardRef<EventFormRef, EventFormProps>(
+  (
+    {
+      name,
+      setName,
+      location,
+      setLocation,
+      duration,
+      setDuration,
+      selectedCalendarId,
+      setSelectedCalendarId,
+      calendars,
+      durationError,
+      setDurationError,
+    },
+    ref,
+  ) => {
+    const validateDuration = () => {
+      const result = validateAndFormatDuration(duration);
+      setDuration(result.formattedValue);
+      setDurationError(result.error);
+      return result.isValid;
+    };
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Location</Text>
-        <TextInput
-          style={styles.input}
-          value={location}
-          onChangeText={setLocation}
-          placeholder="(optional)"
-          placeholderTextColor={styles.placeholderTextColor.color}
-        />
-      </View>
+    const handleDurationChange = (value: string) => {
+      setDuration(value);
+      if (durationError) {
+        setDurationError(null);
+      }
+    };
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Duration (hours)</Text>
-        <TextInput
-          style={styles.input}
-          value={duration}
-          onChangeText={setDuration}
-          keyboardType="numeric"
-        />
-      </View>
+    const handleDurationBlur = () => {
+      validateDuration();
+    };
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Calendar</Text>
-        <Picker
-          selectedValue={selectedCalendarId}
-          onValueChange={(itemValue) => setSelectedCalendarId(itemValue)}
-          style={styles.picker}
-        >
-          {calendars.map((calendar) => (
-            <Picker.Item
-              key={calendar.id}
-              label={calendar.title}
-              value={calendar.id}
-            />
-          ))}
-        </Picker>
-      </View>
-    </>
-  );
-};
+    useImperativeHandle(ref, () => ({
+      validateForm: validateDuration,
+    }));
+
+    return (
+      <>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Event Name</Text>
+          <TextInput
+            style={[styles.input]}
+            value={name}
+            onChangeText={setName}
+            placeholder="Enter event name"
+            placeholderTextColor={styles.placeholderTextColor.color}
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Location</Text>
+          <TextInput
+            style={[styles.input]}
+            value={location}
+            onChangeText={setLocation}
+            placeholder="Enter location"
+            placeholderTextColor={styles.placeholderTextColor.color}
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Duration (hours)</Text>
+          <TextInput
+            style={styles.input}
+            value={duration}
+            onChangeText={handleDurationChange}
+            onBlur={handleDurationBlur}
+            keyboardType="numeric"
+            placeholder="Enter duration"
+            placeholderTextColor={styles.placeholderTextColor.color}
+          />
+          {durationError && (
+            <Text style={styles.errorText}>{durationError}</Text>
+          )}
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Calendar</Text>
+          <Picker
+            selectedValue={selectedCalendarId}
+            onValueChange={(itemValue) => setSelectedCalendarId(itemValue)}
+            style={styles.picker}
+          >
+            {calendars.map((calendar) => (
+              <Picker.Item
+                key={calendar.id}
+                label={calendar.title}
+                value={calendar.id}
+              />
+            ))}
+          </Picker>
+        </View>
+      </>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   input: {
@@ -86,7 +134,7 @@ const styles = StyleSheet.create({
     color: colors.onSurface,
   },
   placeholderTextColor: {
-    color: colors.placeholderTextColor, // Define the placeholder text color here
+    color: colors.placeholderTextColor,
   },
   picker: {
     height: 40,
@@ -99,6 +147,11 @@ const styles = StyleSheet.create({
   label: {
     ...typography.body,
     marginBottom: spacing.small,
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 12,
+    marginTop: spacing.small,
   },
 });
 

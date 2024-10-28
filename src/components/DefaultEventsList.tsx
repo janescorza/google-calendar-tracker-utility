@@ -20,6 +20,7 @@ interface DefaultEventsListProps {
   calendars: Calendar[];
   onEventPress: (event: DefaultEvent) => void;
   onDeleteEvent: (event: DefaultEvent) => void;
+  onEditEvent: (event: DefaultEvent) => void;
 }
 
 const DefaultEventsList: React.FC<DefaultEventsListProps> = ({
@@ -27,6 +28,7 @@ const DefaultEventsList: React.FC<DefaultEventsListProps> = ({
   calendars,
   onEventPress,
   onDeleteEvent,
+  onEditEvent,
 }) => {
   const getCalendarName = (calendarId: string) => {
     const calendar = calendars.find((cal) => cal.id === calendarId);
@@ -61,6 +63,12 @@ const DefaultEventsList: React.FC<DefaultEventsListProps> = ({
         <Text style={styles.eventDuration}>
           {getCalendarName(item.calendarId)} - {item.duration / 60}h
         </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.editButton}
+        onPress={() => onEditEvent(item)}
+      >
+        <Icon name="edit" size={24} color={colors.onSurfaceSecondary} />
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.deleteButton}
@@ -113,6 +121,9 @@ const styles = StyleSheet.create({
   eventDuration: {
     ...typography.body,
     color: colors.onSurfaceSecondary,
+  },
+  editButton: {
+    padding: spacing.medium,
   },
   deleteButton: {
     padding: spacing.medium,
