@@ -1,5 +1,5 @@
 // src/types.ts
-export interface DefaultEvent {
+export interface BaseEvent {
   name: string;
   location: string;
   duration: number; // in minutes

@@ -2,9 +2,9 @@
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { Calendar } from '../types';
-import { colors, typography, spacing } from '../styles/theme';
-import { validateAndFormatDuration } from '../utils/eventValidation';
+import { Calendar } from '../../types';
+import { colors, typography, spacing } from '../../styles/theme';
+import { validateAndFormatDuration } from '../../utils/eventValidation';
 
 export interface EventFormRef {
   validateForm: () => boolean;
@@ -49,9 +49,9 @@ const EventForm = forwardRef<EventFormRef, EventFormProps>(
     };
 
     const handleDurationChange = (value: string) => {
-      setDuration(value);
-      if (durationError) {
-        setDurationError(null);
+      // Allow empty input or valid numeric input
+      if (value === '' || /^[0-9]*\.?[0-9]*$/.test(value)) {
+        setDuration(value);
       }
     };
 
@@ -82,7 +82,7 @@ const EventForm = forwardRef<EventFormRef, EventFormProps>(
             style={[styles.input]}
             value={location}
             onChangeText={setLocation}
-            placeholder="Enter location"
+            placeholder="Enter event location"
             placeholderTextColor={styles.placeholderTextColor.color}
           />
         </View>

@@ -1,116 +1,66 @@
 // CalendarEventsManager.tsx
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert, TouchableOpacity, Text } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import RNCalendarEvents from 'react-native-calendar-events';
-import DefaultEventsList from './DefaultEventsList';
-import EventConfigurationCard from './EventConfigurationCard';
-import AddDefaultEventCard from './AddDefaultEventCard';
-import EditDefaultEventCard from './EditDefaultEventCard';
-import { DefaultEvent, Calendar } from '../types';
-import Snackbar from 'react-native-snackbar';
+import BaseEventsList from './EventList/BaseEventsList';
+import EventInstanceCreationCard from './Cards/EventInstanceCreationCard';
+import AddBaseEventCard from './Cards/AddBaseEventCard';
+import EditBaseEventCard from './Cards/EditBaseEventCard';
+import { BaseEvent } from '../types';
 import { colors, layout, spacing, buttons } from '../styles/theme';
+import { useBaseEvents } from '../hooks/useBaseEvents';
+import { showSnackbar } from '../utils/showSnackbar';
+import { useCalendarPermissions } from '../hooks/useCalendarPermissions';
+import { initialBaseEvents } from '../config/BaseEventsConfig';
 
 const CalendarEventsManager: React.FC = () => {
-  const [calendars, setCalendars] = useState<Calendar[]>([]);
-  const [showAddEventCard, setShowAddEventCard] = useState(false);
-  const [defaultEvents, setDefaultEvents] = useState<DefaultEvent[]>([
-    { name: 'Sleep', location: 'casa yaya', duration: 480, calendarId: '' },
-    { name: 'Lunch', location: 'casa yaya', duration: 30, calendarId: '' },
-    { name: 'Gym', location: '', duration: 60, calendarId: '' },
-    { name: 'Shower', location: 'Gym', duration: 30, calendarId: '' },
-  ]);
-  const [selectedEvent, setSelectedEvent] = useState<DefaultEvent | null>(null);
-  const [editingEvent, setEditingEvent] = useState<DefaultEvent | null>(null);
+  const { loadBaseEvents, saveBaseEvents } = useBaseEvents();
+  const { calendars, requestCalendarPermissions } = useCalendarPermissions();
+  const [modalState, setModalState] = useState<'ADD' | 'VIEW' | 'EDIT' | null>(
+    null,
+  );
+  const [eventInFocus, setEventInFocus] = useState<BaseEvent | null>(null);
+  const [BaseEvents, setBaseEvents] = useState<BaseEvent[]>([]);
 
   useEffect(() => {
     requestCalendarPermissions();
-    loadDefaultEvents();
+    loadEvents();
   }, []);
 
-  const loadDefaultEvents = async () => {
-    try {
-      const storedEvents = await AsyncStorage.getItem('defaultEvents');
-      if (storedEvents) {
-        setDefaultEvents(JSON.parse(storedEvents));
-      }
-    } catch (error) {
-      console.error('Error loading default events:', error);
-    }
+  const loadEvents = async () => {
+    const events = await loadBaseEvents();
+    setBaseEvents(events.length ? events : initialBaseEvents);
   };
 
-  const saveDefaultEvents = async (events: DefaultEvent[]) => {
-    try {
-      await AsyncStorage.setItem('defaultEvents', JSON.stringify(events));
-    } catch (error) {
-      console.error('Error saving default events:', error);
-    }
+  const handleAddBaseEvent = (newEvent: BaseEvent) => {
+    updateBaseEvents([...BaseEvents, newEvent]);
+    setModalState(null);
   };
 
-  const handleAddDefaultEvent = (newEvent: DefaultEvent) => {
-    const updatedEvents = [...defaultEvents, newEvent];
-    setDefaultEvents(updatedEvents);
-    saveDefaultEvents(updatedEvents);
-    setShowAddEventCard(false);
-  };
-
-  const handleDeleteDefaultEvent = (eventToDelete: DefaultEvent) => {
-    const updatedEvents = defaultEvents.filter(
+  const handleDeleteBaseEvent = (eventToDelete: BaseEvent) => {
+    const updatedEvents = BaseEvents.filter(
       (event) => event.name !== eventToDelete.name,
     );
-    setDefaultEvents(updatedEvents);
-    saveDefaultEvents(updatedEvents);
+    updateBaseEvents(updatedEvents);
+    showSnackbar(`Event "${eventToDelete.name}" deleted successfully!`);
   };
 
-  const handleEditDefaultEvent = (eventToEdit: DefaultEvent) => {
-    setEditingEvent(eventToEdit);
-  };
-
-  const handleSaveEditedEvent = (updatedEvent: DefaultEvent) => {
-    const updatedEvents = defaultEvents.map((event) =>
+  const handleSaveEditedEvent = (updatedEvent: BaseEvent) => {
+    const updatedEvents = BaseEvents.map((event) =>
       event.name === updatedEvent.name ? updatedEvent : event,
     );
-    setDefaultEvents(updatedEvents);
-    saveDefaultEvents(updatedEvents);
-    setEditingEvent(null);
-    Snackbar.show({
-      text: `Event "${updatedEvent.name}" updated successfully!`,
-      duration: Snackbar.LENGTH_SHORT,
-    });
+    updateBaseEvents(updatedEvents);
+    setModalState(null);
+    showSnackbar(`Event "${updatedEvent.name}" updated successfully!`);
   };
 
-  const requestCalendarPermissions = async () => {
-    try {
-      const auth = await RNCalendarEvents.requestPermissions();
-      if (auth === 'authorized') {
-        fetchCalendars();
-      } else {
-        Alert.alert(
-          'Permission required',
-          'This app needs calendar access to function properly.',
-        );
-      }
-    } catch (error) {
-      console.error('Error requesting calendar permissions:', error);
-    }
-  };
-
-  const fetchCalendars = async () => {
-    try {
-      const fetchedCalendars = await RNCalendarEvents.findCalendars();
-      const formattedCalendars = fetchedCalendars.map((cal) => ({
-        id: cal.id,
-        title: cal.title,
-        isPrimary: cal.isPrimary,
-      }));
-      setCalendars(formattedCalendars);
-    } catch (error) {
-      console.error('Error fetching calendars:', error);
-    }
+  const updateBaseEvents = (events: BaseEvent[]) => {
+    setBaseEvents(events);
+    saveBaseEvents(events);
   };
 
   const createEvent = async (
-    event: DefaultEvent,
+    event: BaseEvent,
     calendarId: string,
     startTime: Date,
   ) => {
@@ -119,97 +69,84 @@ const CalendarEventsManager: React.FC = () => {
       const eventTitle = event.location
         ? `${event.name} @ ${event.location}`
         : event.name;
-
       const eventId = await RNCalendarEvents.saveEvent(eventTitle, {
-        calendarId: calendarId,
+        calendarId,
         startDate: startTime.toISOString(),
         endDate: endTime.toISOString(),
       });
-
-      Snackbar.show({
-        text: `Event "${eventTitle}" created successfully!`,
-        duration: Snackbar.LENGTH_SHORT,
-      });
-      setSelectedEvent(null);
+      showSnackbar(`Event "${eventTitle}" created successfully!`);
+      setModalState(null);
       return eventId;
     } catch (error) {
       console.error('Error creating event:', error);
-      Snackbar.show({
-        text: 'Failed to create event. Please try again.',
-        duration: Snackbar.LENGTH_SHORT,
-      });
+      showSnackbar('Failed to create event. Please try again.', true);
     }
-  };
-
-  const renderTopContent = () => {
-    const isDisabled =
-      showAddEventCard || selectedEvent !== null || editingEvent !== null;
-    return (
-      <TouchableOpacity
-        style={[styles.addButton, isDisabled && styles.disabledButton]}
-        onPress={() => !isDisabled && setShowAddEventCard(true)}
-        disabled={isDisabled}
-      >
-        <Text
-          style={[
-            styles.addButtonText,
-            isDisabled && styles.disabledButtonText,
-          ]}
-        >
-          Add New Default Event
-        </Text>
-      </TouchableOpacity>
-    );
   };
 
   const renderContent = () => {
-    if (selectedEvent) {
+    if (modalState === 'VIEW' && eventInFocus) {
       return (
-        <EventConfigurationCard
-          event={selectedEvent}
+        <EventInstanceCreationCard
+          event={eventInFocus}
           calendars={calendars}
           onCreateEvent={createEvent}
-          onCancel={() => setSelectedEvent(null)}
+          onCancel={() => setModalState(null)}
         />
       );
     }
-
-    if (showAddEventCard) {
+    if (modalState === 'ADD') {
       return (
-        <AddDefaultEventCard
+        <AddBaseEventCard
           calendars={calendars}
-          onAddEvent={handleAddDefaultEvent}
-          onCancel={() => setShowAddEventCard(false)}
+          onAddEvent={handleAddBaseEvent}
+          onCancel={() => setModalState(null)}
         />
       );
     }
-
-    if (editingEvent) {
+    if (modalState === 'EDIT' && eventInFocus) {
       return (
-        <EditDefaultEventCard
-          event={editingEvent}
+        <EditBaseEventCard
+          event={eventInFocus}
           calendars={calendars}
           onSaveEvent={handleSaveEditedEvent}
-          onCancel={() => setEditingEvent(null)}
+          onCancel={() => setModalState(null)}
         />
       );
     }
-
     return (
-      <DefaultEventsList
-        events={defaultEvents}
+      <BaseEventsList
+        events={BaseEvents}
         calendars={calendars}
-        onEventPress={(event) => setSelectedEvent(event)}
-        onDeleteEvent={handleDeleteDefaultEvent}
-        onEditEvent={handleEditDefaultEvent}
+        onEventPress={(event) => {
+          setModalState('VIEW');
+          setEventInFocus(event);
+        }}
+        onDeleteEvent={handleDeleteBaseEvent}
+        onEditEvent={(event) => {
+          setModalState('EDIT');
+          setEventInFocus(event);
+        }}
       />
     );
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.topContent}>{renderTopContent()}</View>
-      <View style={styles.bottomContent}>{renderContent()}</View>
+      <TouchableOpacity
+        style={[styles.addButton, modalState && styles.disabledButton]}
+        onPress={() => !modalState && setModalState('ADD')}
+        disabled={!!modalState}
+      >
+        <Text
+          style={[
+            styles.addButtonText,
+            modalState && styles.disabledButtonText,
+          ]}
+        >
+          Add New Base Event
+        </Text>
+      </TouchableOpacity>
+      {renderContent()}
     </View>
   );
 };
@@ -220,25 +157,13 @@ const styles = StyleSheet.create({
     padding: spacing.medium,
     justifyContent: 'space-between',
   },
-  topContent: {
-    flex: 1,
-  },
-  bottomContent: {},
-  addButton: {
-    ...buttons.secondary,
-    marginBottom: spacing.large,
-  },
-  addButtonText: {
-    ...buttons.secondaryText,
-    fontWeight: 'bold',
-  },
+  addButton: { ...buttons.secondary, marginBottom: spacing.large },
+  addButtonText: { ...buttons.secondaryText, fontWeight: 'bold' },
   disabledButton: {
     backgroundColor: colors.surface,
     borderColor: colors.surface,
   },
-  disabledButtonText: {
-    color: colors.onSurfaceDisabled,
-  },
+  disabledButtonText: { color: colors.onSurfaceDisabled },
 });
 
 export default CalendarEventsManager;

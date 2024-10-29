@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors, spacing } from '../styles/theme';
+import { colors, spacing } from '../../styles/theme';
 
 interface TimeSelectorProps {
   onTimeSelected: (time: Date) => void;
