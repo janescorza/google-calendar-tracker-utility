@@ -39,7 +39,7 @@ const CalendarEventsManager: React.FC = () => {
 
   const handleDeleteBaseEvent = (eventToDelete: BaseEvent) => {
     const updatedEvents = BaseEvents.filter(
-      (event) => event.name !== eventToDelete.name,
+      (event) => event.id !== eventToDelete.id,
     );
     updateBaseEvents(updatedEvents);
     showSnackbar(`Event "${eventToDelete.name}" deleted successfully!`);
@@ -47,7 +47,7 @@ const CalendarEventsManager: React.FC = () => {
 
   const handleSaveEditedEvent = (updatedEvent: BaseEvent) => {
     const updatedEvents = BaseEvents.map((event) =>
-      event.name === updatedEvent.name ? updatedEvent : event,
+      event.id === updatedEvent.id ? updatedEvent : event,
     );
     updateBaseEvents(updatedEvents);
     setModalState(null);
@@ -69,14 +69,14 @@ const CalendarEventsManager: React.FC = () => {
       const eventTitle = event.location
         ? `${event.name} @ ${event.location}`
         : event.name;
-      const eventId = await RNCalendarEvents.saveEvent(eventTitle, {
+      const eventInstanceId = await RNCalendarEvents.saveEvent(eventTitle, {
         calendarId,
         startDate: startTime.toISOString(),
         endDate: endTime.toISOString(),
       });
-      showSnackbar(`Event "${eventTitle}" created successfully!`);
+      showSnackbar(`"${eventTitle}" event created successfully!`);
       setModalState(null);
-      return eventId;
+      return eventInstanceId;
     } catch (error) {
       console.error('Error creating event:', error);
       showSnackbar('Failed to create event. Please try again.', true);

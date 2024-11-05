@@ -1,3 +1,4 @@
+//EditBaseEventCard.tsx
 import React from 'react';
 import { BaseEvent, Calendar } from '../../types';
 import EventForm from '../Event/EventForm';

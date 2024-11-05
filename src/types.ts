@@ -1,5 +1,6 @@
 // src/types.ts
 export interface BaseEvent {
+  id: string;
   name: string;
   location: string;
   duration: number; // in minutes
