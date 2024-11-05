@@ -1,13 +1,13 @@
 // EventInstanceCreationCard.tsx
-import React, { useState, useRef, useMemo, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { Text, StyleSheet } from 'react-native';
 import { BaseEvent, Calendar } from '../../types';
-import EventForm, { EventFormRef } from '../Event/EventForm';
+import EventForm from '../Event/EventForm';
 import TimeSelector from '../Event/TimeSelector';
 import { ActionButtons } from '../Common/ActionButtons';
 import { typography, spacing } from '../../styles/theme';
 import { CardContainer } from '../Common/CardContainer';
-import { useEventTime } from '../../hooks/useEventTime';
+import { useEventForm } from '../../hooks/useEventForm';
 
 interface EventInstanceCreationCardProps {
   event: BaseEvent;
@@ -27,46 +27,38 @@ const EventInstanceCreationCard: React.FC<EventInstanceCreationCardProps> = ({
   onCreateEvent,
   onCancel,
 }) => {
-  const [name, setName] = useState(event.name);
-  const [location, setLocation] = useState(event.location);
-  const [selectedCalendarId, setSelectedCalendarId] = useState(
-    event.calendarId || calendars.find((cal) => cal.isPrimary)?.id || '',
-  );
-
-  const formRef = useRef<EventFormRef>(null);
-
   const {
-    startTime,
-    endTime,
+    name,
+    setName,
+    location,
+    setLocation,
     duration,
+    setDuration,
+    selectedCalendarId,
+    setSelectedCalendarId,
     durationError,
     setDurationError,
+    startTime,
+    endTime,
     handleStartTimeChange,
     handleEndTimeChange,
-    handleDurationChange,
-  } = useEventTime({ initialDuration: event.duration });
-
-  const isFormValid = useMemo(() => name.trim() !== '', [name]);
+    formRef,
+    isFormValid,
+    validateForm,
+    getEventData,
+  } = useEventForm({ initialEvent: event, calendars });
 
   const handleEventCreation = useCallback(() => {
-    if (!isFormValid) return;
-
-    const updatedEvent: BaseEvent = {
-      name,
-      location,
-      duration: parseFloat(duration) * 60,
-      calendarId: selectedCalendarId,
-    };
-    onCreateEvent(updatedEvent, selectedCalendarId, startTime, endTime);
+    if (!validateForm() || !isFormValid) return;
+    onCreateEvent(getEventData(), selectedCalendarId, startTime, endTime);
   }, [
-    name,
-    location,
-    duration,
+    validateForm,
+    isFormValid,
+    onCreateEvent,
     selectedCalendarId,
     startTime,
     endTime,
-    onCreateEvent,
-    isFormValid,
+    getEventData,
   ]);
 
   return (
@@ -84,7 +76,7 @@ const EventInstanceCreationCard: React.FC<EventInstanceCreationCardProps> = ({
         duration={duration}
         durationError={durationError}
         setDurationError={setDurationError}
-        setDuration={handleDurationChange}
+        setDuration={setDuration}
         selectedCalendarId={selectedCalendarId}
         setSelectedCalendarId={setSelectedCalendarId}
         calendars={calendars}

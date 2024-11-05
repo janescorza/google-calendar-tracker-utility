@@ -1,4 +1,21 @@
 // eventValidation.ts
+export const isEmptyInput = (duration: string): boolean => {
+  return duration.trim() === '';
+};
+
+export const isPartialDecimalInput = (duration: string): boolean => {
+  return duration === '0' || duration === '.' || duration === '0.';
+};
+
+export const isValidNumber = (duration: string): boolean => {
+  const numericValue = parseFloat(duration);
+  return !isNaN(numericValue) && numericValue > 0;
+};
+
+export const isInFifteenMinuteIncrement = (duration: number): boolean => {
+  return (duration * 60) % 15 === 0;
+};
+
 export const validateAndFormatDuration = (
   duration: string,
 ): {
@@ -6,8 +23,7 @@ export const validateAndFormatDuration = (
   formattedValue: string;
   error: string | null;
 } => {
-  // Allow empty input during typing
-  if (duration.trim() === '') {
+  if (isEmptyInput(duration)) {
     return {
       isValid: false,
       formattedValue: '',
@@ -15,8 +31,7 @@ export const validateAndFormatDuration = (
     };
   }
 
-  // Allow partial decimal input during typing
-  if (duration === '0' || duration === '.' || duration === '0.') {
+  if (isPartialDecimalInput(duration)) {
     return {
       isValid: false,
       formattedValue: duration,
@@ -33,10 +48,7 @@ export const validateAndFormatDuration = (
     };
   }
 
-  const numericValue = parseFloat(duration);
-
-  // Basic numeric validation
-  if (isNaN(numericValue) || numericValue <= 0) {
+  if (!isValidNumber(duration)) {
     return {
       isValid: false,
       formattedValue: duration,
@@ -44,30 +56,20 @@ export const validateAndFormatDuration = (
     };
   }
 
-  // Only round and validate on blur or form submission
-  if (!duration.includes('.') || duration.split('.')[1]?.length === 2) {
-    const roundedValue = Math.round(numericValue * 4) / 4;
+  const numericValue = parseFloat(duration);
+  const roundedValue = Math.round(numericValue * 4) / 4;
 
-    // Check if it's in 15-minute increments
-    if ((roundedValue * 60) % 15 !== 0) {
-      return {
-        isValid: false,
-        formattedValue: roundedValue.toString(),
-        error: 'Duration must be in 15-minute increments',
-      };
-    }
-
+  if (!isInFifteenMinuteIncrement(roundedValue)) {
     return {
-      isValid: true,
+      isValid: false,
       formattedValue: roundedValue.toString(),
-      error: null,
+      error: 'Duration must be in 15-minute increments',
     };
   }
 
-  // Allow partial decimal input
   return {
     isValid: true,
-    formattedValue: duration,
+    formattedValue: roundedValue.toString(),
     error: null,
   };
 };

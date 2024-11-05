@@ -58,7 +58,7 @@ export const useEventForm = ({
 
   const validateForm = () => {
     // Only validate if there's a value
-    if (duration === '') {
+    if (duration.trim() === '') {
       setDurationError('Duration is required');
       return false;
     }
