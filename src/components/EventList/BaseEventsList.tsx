@@ -62,7 +62,7 @@ const BaseEventsList: React.FC<BaseEventsListProps> = ({
         style={styles.list}
         data={events}
         renderItem={renderEventItem}
-        keyExtractor={(item) => item.name}
+        keyExtractor={(item) => item.id}
       />
     </View>
   );

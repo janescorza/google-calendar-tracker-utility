@@ -10,10 +10,15 @@ interface UseEventFormParams {
   calendars: Calendar[];
 }
 
+const generateUUID = () => {
+  return `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
+};
+
 export const useEventForm = ({
   initialEvent,
   calendars,
 }: UseEventFormParams) => {
+  const id = initialEvent?.id ?? generateUUID(); // Generate a unique ID in base event creations
   const [name, setName] = useState(initialEvent?.name ?? '');
   const [location, setLocation] = useState(initialEvent?.location ?? '');
   const [selectedCalendarId, setSelectedCalendarId] = useState(
@@ -58,7 +63,7 @@ export const useEventForm = ({
 
   const validateForm = () => {
     // Only validate if there's a value
-    if (duration === '') {
+    if (duration.trim() === '') {
       setDurationError('Duration is required');
       return false;
     }
@@ -72,6 +77,7 @@ export const useEventForm = ({
     startTime: Date;
     endTime: Date;
   } => ({
+    id,
     name,
     location,
     duration: parseFloat(duration || '0') * 60, // Handle empty string case
